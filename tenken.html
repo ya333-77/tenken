@@ -27,23 +27,23 @@ body{overscroll-behavior:none}
 .topbar{background:var(--navy);padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:10px;flex-shrink:0}
 .topbar-icon{width:36px;height:36px;background:rgba(255,255,255,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .topbar-info{flex:1}
-.topbar-title{color:#fff;font-size:15px;font-weight:700;letter-spacing:.02em}
-.topbar-sub{color:#93b8d8;font-size:11px;margin-top:1px}
+.topbar-title{color:#fff;font-size:17px;font-weight:700;letter-spacing:.02em}
+.topbar-sub{color:#93b8d8;font-size:13px;margin-top:1px}
 .topbar-btn{background:rgba(255,255,255,.1);border:none;color:#93b8d8;font-size:18px;cursor:pointer;padding:6px 8px;border-radius:8px;line-height:1}
 .topbar-btn:active{background:rgba(255,255,255,.2)}
 .back-btn{background:rgba(255,255,255,.1);border:none;color:#93b8d8;font-size:22px;cursor:pointer;padding:6px 8px;border-radius:8px;line-height:1}
 .back-btn:active{background:rgba(255,255,255,.2)}
 .scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .cal-nav{display:flex;align-items:center;padding:14px 16px 10px;background:var(--white);border-bottom:1px solid var(--border)}
-.cal-month-lbl{flex:1;text-align:center;font-size:17px;font-weight:700;color:var(--navy)}
+.cal-month-lbl{flex:1;text-align:center;font-size:20px;font-weight:700;color:var(--navy)}
 .cal-nav-btn{background:var(--gray-lt);border:none;border-radius:8px;width:34px;height:34px;font-size:16px;cursor:pointer;color:var(--navy2)}
 .cal-nav-btn:active{background:var(--border)}
 .cal-wrap{background:var(--white);padding:0 12px 12px;border-bottom:1px solid var(--border)}
 .cal-dows{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
-.cal-dow{text-align:center;font-size:11px;font-weight:600;padding:6px 0;color:var(--gray)}
+.cal-dow{text-align:center;font-size:13px;font-weight:700;padding:6px 0;color:var(--gray)}
 .cal-dow.sat{color:var(--sat)}.cal-dow.sun{color:var(--sun)}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;gap:2px;font-size:14px;font-weight:500;color:var(--text);transition:background .1s}
+.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;gap:2px;font-size:17px;font-weight:600;color:var(--text);transition:background .1s}
 .cal-cell:active{background:#e0e7ef}
 .cal-cell.today{background:var(--navy);color:#fff}
 .cal-cell.sat{color:var(--sat)}.cal-cell.sun{color:var(--sun)}
@@ -54,9 +54,9 @@ body{overscroll-behavior:none}
 .dot{width:5px;height:5px;border-radius:50%}
 .dot.ok{background:var(--ok)}.dot.ng{background:var(--ng)}.dot.half{background:#f59e0b}
 .legend{display:flex;gap:14px;padding:10px 16px;background:var(--white);border-bottom:1px solid var(--border)}
-.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray)}
+.leg{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--gray)}
 .leg .dot{width:7px;height:7px}
-.cal-hint{padding:14px 16px;text-align:center;color:var(--text2);font-size:13px;background:var(--white);margin:8px;border-radius:var(--radius)}
+.cal-hint{padding:14px 16px;text-align:center;color:var(--text2);font-size:15px;background:var(--white);margin:8px;border-radius:var(--radius)}
 .pdf-panel{background:var(--white);margin:8px;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
 .pdf-panel-hdr{background:var(--navy2);padding:12px 16px}
 .pdf-panel-hdr span{color:#fff;font-size:14px;font-weight:700}
@@ -114,30 +114,37 @@ body{overscroll-behavior:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* PRINT */
+@page{size:A4 landscape;margin:8mm 10mm}
 @media print{
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{background:#fff}
   .app{display:none!important}
-  #print-area{display:block!important;padding:12pt 14pt}
-  .pt-title{font-size:14pt;font-weight:700;color:#0f2744;margin-bottom:4pt}
-  .pt-meta{font-size:8.5pt;color:#444;margin-bottom:8pt;display:flex;gap:18pt;flex-wrap:wrap}
+  #print-area{display:block!important;padding:0}
+  .pt-page{width:100%;display:block}
+  .pt-title{font-size:12pt;font-weight:700;color:#0f2744;margin-bottom:3pt}
+  .pt-meta{font-size:7.5pt;color:#444;margin-bottom:4pt;display:flex;gap:14pt;flex-wrap:wrap}
   .pt-meta strong{color:#111}
-  table.pt{width:100%;border-collapse:collapse;font-size:7pt}
-  table.pt th{background:#0f2744!important;color:#fff!important;padding:4pt 2pt;text-align:center;font-weight:700;border:0.5pt solid #999}
-  table.pt th.item-col{text-align:left;width:130pt}
-  table.pt th.no-col{width:14pt}
-  table.pt td{border:0.5pt solid #ccc;padding:2.5pt 2pt;text-align:center;vertical-align:middle}
-  table.pt td.item-cell{text-align:left;font-size:6.8pt;line-height:1.3;padding-left:4pt}
-  table.pt td.no-cell{color:#888;font-size:6.8pt}
-  table.pt tr.cat-row td{background:#dbeafe!important;font-weight:700;font-size:7.5pt;color:#1e3a5f;text-align:left;padding:3pt 5pt}
-  table.pt tr.item-even td:not(.cat-row *){background:#f9fafb!important}
-  .ok{background:#dcfce7!important;color:#14532d;font-weight:700;font-size:11pt;line-height:1}
-  .nx{background:#fee2e2!important;color:#7f1d1d;font-weight:700;font-size:11pt;line-height:1}
-  .mt{color:#d1d5db;font-size:8pt}
-  .sign-row td{height:16pt;background:#fffde7!important;font-size:7pt;color:#555;vertical-align:middle}
-  .pt-footer{margin-top:8pt;font-size:7pt;color:#888;display:flex;justify-content:space-between}
-  .pt-legend{display:flex;gap:14pt;font-size:7.5pt;color:#444;margin-top:5pt;align-items:center}
-  .lg-dot{width:8pt;height:8pt;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:3pt}
+  .pt-table-wrap{width:100%}
+  table.pt{border-collapse:collapse;font-size:6.5pt;table-layout:fixed;width:auto}
+  table.pt th{background:#0f2744!important;color:#fff!important;padding:3pt 0;text-align:center;font-weight:700;border:0.5pt solid #888}
+  table.pt th.item-col{text-align:left;width:108pt;padding-left:3pt}
+  table.pt th.no-col{width:12pt}
+  table.pt th.day-col{width:33pt}
+  table.pt td{border:0.5pt solid #ccc;padding:2pt 0;text-align:center;vertical-align:middle}
+  table.pt td.item-cell{text-align:left;font-size:5.8pt;line-height:1.3;padding-left:3pt;word-break:break-all}
+  table.pt td.no-cell{color:#888;font-size:5.8pt}
+  table.pt tr.cat-row td{background:#dbeafe!important;font-weight:700;font-size:6.8pt;color:#1e3a5f;text-align:left;padding:2pt 4pt}
+  table.pt tr.item-even td{background:#f9fafb!important}
+  table.pt tr{page-break-inside:avoid;break-inside:avoid}
+  .ok{background:#dcfce7!important;color:#14532d;font-weight:700;font-size:9pt;line-height:1}
+  .nx{background:#fee2e2!important;color:#7f1d1d;font-weight:700;font-size:9pt;line-height:1}
+  .mt{color:#d1d5db;font-size:6pt}
+  .sign-row td{height:13pt;background:#fffde7!important;font-size:6pt;color:#555;vertical-align:middle}
+  .pt-bottom{margin-top:3pt}
+  .pt-footer{font-size:6pt;color:#888;display:flex;justify-content:space-between}
+  .pt-legend{display:flex;gap:10pt;font-size:6pt;color:#444;margin-top:2pt;align-items:center}
+  .lg-dot{width:6pt;height:6pt;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:2pt}
+  .page-break{page-break-after:always;break-after:page;margin-bottom:0}
 }
 #print-area{display:none}
 </style>
@@ -147,7 +154,25 @@ body{overscroll-behavior:none}
 
 <div class="screen active" id="sc-cal">
   <div class="topbar">
-    <div class="topbar-icon">🚧</div>
+    <div class="topbar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="28" height="28">
+  <!-- body -->
+  <rect x="4" y="18" width="18" height="9" rx="2" fill="#F5C518"/>
+  <!-- cab -->
+  <rect x="8" y="12" width="10" height="8" rx="1.5" fill="#F5C518"/>
+  <rect x="9" y="13" width="4" height="3" rx="1" fill="#9dd6f8" opacity="0.9"/>
+  <!-- boom arm -->
+  <rect x="17" y="10" width="12" height="3.5" rx="1.5" fill="#E8A800" transform="rotate(-20 17 10)"/>
+  <!-- stick -->
+  <rect x="24" y="14" width="9" height="3" rx="1.5" fill="#E8A800" transform="rotate(30 24 14)"/>
+  <!-- bucket -->
+  <path d="M29 22 Q32 20 33 24 Q31 27 28 26 Z" fill="#E8A800"/>
+  <!-- tracks -->
+  <rect x="2" y="26" width="22" height="5" rx="2.5" fill="#444"/>
+  <rect x="3" y="27" width="20" height="3" rx="1.5" fill="#666"/>
+  <circle cx="6" cy="28.5" r="2" fill="#333"/>
+  <circle cx="20" cy="28.5" r="2" fill="#333"/>
+  <circle cx="13" cy="28.5" r="1.5" fill="#555"/>
+</svg></div>
     <div class="topbar-info">
       <div class="topbar-title">重機始業前点検</div>
       <div class="topbar-sub">㈱アシスト環境 — 車両系建設機械</div>
@@ -393,28 +418,17 @@ function getDates(from,to){
 function fmtShort(key){const p=key.split('-');return `${parseInt(p[1])}/${parseInt(p[2])}\n(${WD[new Date(+p[0],+p[1]-1,+p[2]).getDay()]})`;}
 function fmtFull(key){const p=key.split('-');return `${p[0]}年${parseInt(p[1])}月${parseInt(p[2])}日`;}
 
-function exportPDF(){
-  const from=document.getElementById('pdf-from').value;
-  const to=document.getElementById('pdf-to').value;
-  const site=document.getElementById('pdf-site').value||'　';
-  if(!from||!to){showToast('開始日と終了日を選んでください');return;}
-  if(from>to){showToast('終了日は開始日以降にしてください');return;}
-  const dates=getDates(from,to);
-  if(dates.length>62){showToast('期間は最大62日までです');return;}
-
-  // build flat item list with category rows
+function buildTable(dates,site,from2,to2,printed){
   const rows=[];let itemNo=1;
   SEC.forEach(sec=>{
     rows.push({type:'cat',label:sec.label});
     sec.items.forEach(txt=>{rows.push({type:'item',no:itemNo++,text:txt});});
   });
-
   const thDates=dates.map(key=>{
     const p=key.split('-');const wd=new Date(+p[0],+p[1]-1,+p[2]).getDay();
     const wdColor=wd===0?'color:#b91c1c':wd===6?'color:#1d4ed8':'';
-    return `<th style="font-size:6pt;padding:3pt 1pt;min-width:20pt;${wdColor}">${parseInt(p[1])}/${parseInt(p[2])}<br>(${WD[wd]})</th>`;
+    return `<th class="day-col" style="${wdColor}">${parseInt(p[1])}/${parseInt(p[2])}<br>(${WD[wd]})</th>`;
   }).join('');
-
   let itemRowCount=0;
   const tableRows=rows.map(r=>{
     if(r.type==='cat') return `<tr class="cat-row"><td colspan="${2+dates.length}">${r.label}</td></tr>`;
@@ -427,49 +441,69 @@ function exportPDF(){
     }).join('');
     return `<tr class="${evenCls}"><td class="no-cell">${r.no}</td><td class="item-cell">${r.text}</td>${tds}</tr>`;
   }).join('');
-
   const signTds=dates.map(key=>{
     const rec=db[key];
     return `<td class="sign-row">${rec&&rec.person?rec.person:''}</td>`;
   }).join('');
-
-  const printed=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
-
-  document.getElementById('print-area').innerHTML=`
-    <div class="pt-title">車両系建設機械 始業前点検表</div>
-    <div class="pt-meta">
-      <span><strong>現場名：</strong>${site}</span>
-      <span><strong>期間：</strong>${fmtFull(from)} 〜 ${fmtFull(to)}</span>
-      <span><strong>解体工事店：</strong>㈱アシスト環境</span>
+  return `
+    <div class="pt-page">
+      <div class="pt-title">車両系建設機械 始業前点検表</div>
+      <div class="pt-meta">
+        <span><strong>現場名：</strong>${site}</span>
+        <span><strong>期間：</strong>${fmtFull(from2)} 〜 ${fmtFull(to2)}</span>
+        <span><strong>解体工事店：</strong>㈱アシスト環境</span>
+      </div>
+      <div class="pt-table-wrap">
+        <table class="pt">
+          <thead><tr>
+            <th class="no-col">No.</th>
+            <th class="item-col">点検項目</th>
+            ${thDates}
+          </tr></thead>
+          <tbody>
+            ${tableRows}
+            <tr class="sign-row"><td colspan="2" style="text-align:left;padding-left:4pt;font-weight:700">確認者サイン</td>${signTds}</tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pt-bottom">
+        <div class="pt-legend">
+          <span><span class="lg-dot" style="background:#16a34a"></span>○ 異常なし</span>
+          <span><span class="lg-dot" style="background:#dc2626"></span>× 要確認・異常あり</span>
+          <span><span class="lg-dot" style="background:#e5e7eb"></span>— 未入力</span>
+        </div>
+        <div class="pt-footer"><span>出力日：${printed}</span><span>重機始業前点検アプリ</span></div>
+      </div>
     </div>
-    <table class="pt">
-      <thead><tr>
-        <th class="no-col">No.</th>
-        <th class="item-col">点検項目</th>
-        ${thDates}
-      </tr></thead>
-      <tbody>
-        ${tableRows}
-        <tr class="sign-row"><td colspan="2" style="text-align:left;padding-left:5pt;font-weight:700">確認者サイン</td>${signTds}</tr>
-      </tbody>
-    </table>
-    <div class="pt-legend">
-      <span><span class="lg-dot" style="background:#16a34a"></span>○ 異常なし</span>
-      <span><span class="lg-dot" style="background:#dc2626"></span>× 要確認・異常あり</span>
-      <span><span class="lg-dot" style="background:#e5e7eb"></span>— 未入力</span>
-    </div>
-    <div class="pt-footer"><span>出力日：${printed}</span><span>重機始業前点検アプリ</span></div>
   `;
+}
 
+function exportPDF(){
+  const from=document.getElementById('pdf-from').value;
+  const to=document.getElementById('pdf-to').value;
+  const site=document.getElementById('pdf-site').value||'　';
+  if(!from||!to){showToast('開始日と終了日を選んでください');return;}
+  if(from>to){showToast('終了日は開始日以降にしてください');return;}
+  const dates=getDates(from,to);
+  if(dates.length>62){showToast('期間は最大62日までです');return;}
+  const printed=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+  const CHUNK=20;
+  let html='';
+  for(let i=0;i<dates.length;i+=CHUNK){
+    const chunk=dates.slice(i,i+CHUNK);
+    const chunkFrom=chunk[0],chunkTo=chunk[chunk.length-1];
+    if(i>0) html+=`<div class="page-break"></div>`;
+    html+=buildTable(chunk,site,chunkFrom,chunkTo,printed);
+  }
+  document.getElementById('print-area').innerHTML=html;
   document.querySelector('.app').style.display='none';
   document.getElementById('print-area').style.display='block';
   setTimeout(()=>{
     window.print();
     document.querySelector('.app').style.display='';
     document.getElementById('print-area').style.display='none';
-  },100);
+  },150);
 }
-
 function showToast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2200);
