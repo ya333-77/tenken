@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="重機点検">
+<meta name="theme-color" content="#0f2744">
+<title>重機始業前点検</title>
+<style>
+:root{
+  --navy:#0f2744;--navy2:#1a3a5c;--blue:#2563a8;
+  --ok:#16a34a;--ok-bg:#dcfce7;--ok-dk:#14532d;
+  --ng:#dc2626;--ng-bg:#fee2e2;--ng-dk:#7f1d1d;
+  --gray:#6b7280;--gray-lt:#f3f4f6;--border:#e5e7eb;
+  --text:#111827;--text2:#6b7280;--white:#fff;
+  --sat:#1d4ed8;--sun:#b91c1c;--radius:10px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;background:#f1f5f9;color:var(--text)}
+body{overscroll-behavior:none}
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:#f1f5f9}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+.topbar{background:var(--navy);padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar-icon{width:36px;height:36px;background:rgba(255,255,255,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.topbar-info{flex:1}
+.topbar-title{color:#fff;font-size:17px;font-weight:700;letter-spacing:.02em}
+.topbar-sub{color:#93b8d8;font-size:13px;margin-top:1px}
+.topbar-btn{background:rgba(255,255,255,.1);border:none;color:#93b8d8;font-size:18px;cursor:pointer;padding:6px 8px;border-radius:8px;line-height:1}
+.topbar-btn:active{background:rgba(255,255,255,.2)}
+.back-btn{background:rgba(255,255,255,.1);border:none;color:#93b8d8;font-size:22px;cursor:pointer;padding:6px 8px;border-radius:8px;line-height:1}
+.back-btn:active{background:rgba(255,255,255,.2)}
+.scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.cal-nav{display:flex;align-items:center;padding:14px 16px 10px;background:var(--white);border-bottom:1px solid var(--border)}
+.cal-month-lbl{flex:1;text-align:center;font-size:20px;font-weight:700;color:var(--navy)}
+.cal-nav-btn{background:var(--gray-lt);border:none;border-radius:8px;width:34px;height:34px;font-size:16px;cursor:pointer;color:var(--navy2)}
+.cal-nav-btn:active{background:var(--border)}
+.cal-wrap{background:var(--white);padding:0 12px 12px;border-bottom:1px solid var(--border)}
+.cal-dows{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
+.cal-dow{text-align:center;font-size:13px;font-weight:700;padding:6px 0;color:var(--gray)}
+.cal-dow.sat{color:var(--sat)}.cal-dow.sun{color:var(--sun)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;gap:2px;font-size:17px;font-weight:600;color:var(--text);transition:background .1s}
+.cal-cell:active{background:#e0e7ef}
+.cal-cell.today{background:var(--navy);color:#fff}
+.cal-cell.sat{color:var(--sat)}.cal-cell.sun{color:var(--sun)}
+.cal-cell.today.sat,.cal-cell.today.sun{color:#fff}
+.cal-cell.future{opacity:.3;pointer-events:none}
+.cal-cell.empty{pointer-events:none}
+.dot-row{display:flex;gap:2px}
+.dot{width:5px;height:5px;border-radius:50%}
+.dot.ok{background:var(--ok)}.dot.ng{background:var(--ng)}.dot.half{background:#f59e0b}
+.legend{display:flex;gap:14px;padding:10px 16px;background:var(--white);border-bottom:1px solid var(--border)}
+.leg{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--gray)}
+.leg .dot{width:7px;height:7px}
+.cal-hint{padding:14px 16px;text-align:center;color:var(--text2);font-size:15px;background:var(--white);margin:8px;border-radius:var(--radius)}
+.pdf-panel{background:var(--white);margin:8px;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+.pdf-panel-hdr{background:var(--navy2);padding:12px 16px}
+.pdf-panel-hdr span{color:#fff;font-size:14px;font-weight:700}
+.pdf-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.pdf-row{display:flex;gap:8px;align-items:center}
+.pdf-row label{font-size:12px;color:var(--text2);min-width:48px;font-weight:600;flex-shrink:0}
+.pdf-row input[type=date]{flex:1;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--gray-lt);color:var(--text);font-family:inherit}
+.pdf-row input:focus{outline:none;border-color:var(--blue)}
+.pdf-site input{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--gray-lt);color:var(--text);font-family:inherit}
+.pdf-site input:focus{outline:none;border-color:var(--blue)}
+.pdf-btn{width:100%;padding:13px;font-size:14px;font-weight:700;background:var(--navy);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit}
+.pdf-btn:active{background:var(--navy2)}
+.insp-datebar{background:var(--navy2);padding:10px 16px;display:flex;align-items:center;gap:8px}
+.insp-datebar .date-lbl{color:#fff;font-size:15px;font-weight:700;flex:1}
+.status-badge{font-size:11px;padding:3pt 10px;border-radius:20px;font-weight:600}
+.badge-done{background:var(--ok-bg);color:var(--ok-dk)}.badge-ing{background:#fef3c7;color:#92400e}
+.meta-row{background:var(--white);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;gap:8px}
+.meta-row input{flex:1;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--gray-lt);color:var(--text);font-family:inherit}
+.meta-row input:focus{outline:none;border-color:var(--blue);background:#fff}
+.prog-wrap{background:var(--white);padding:10px 16px;border-bottom:1px solid var(--border)}
+.prog-top{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:6px}
+.prog-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--ok));border-radius:3px;transition:width .25s}
+.sec-hdr{font-size:10px;font-weight:700;color:var(--navy2);letter-spacing:.08em;text-transform:uppercase;padding:12px 16px 5px;background:#f1f5f9;border-top:1px solid var(--border)}
+.item-row{display:flex;align-items:center;background:var(--white);border-bottom:1px solid var(--border);min-height:52px}
+.item-no{width:30px;text-align:center;font-size:11px;color:var(--text2);font-weight:600;flex-shrink:0}
+.item-text{flex:1;font-size:13px;color:var(--text);line-height:1.45;padding:12px 8px 12px 0}
+.btn-maru,.btn-batu{width:52px;height:52px;flex-shrink:0;border:none;background:none;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s;border-left:1px solid var(--border)}
+.btn-maru{color:#ccc}.btn-batu{color:#ccc}
+.btn-maru.active{background:var(--ok-bg);color:var(--ok)}
+.btn-batu.active{background:var(--ng-bg);color:var(--ng)}
+.btn-maru:active{background:#d1fae5}.btn-batu:active{background:#fee2e2}
+.sum-bar{background:var(--white);border-top:1px solid var(--border);padding:12px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sum-card{border-radius:8px;padding:10px 6px;text-align:center;border:1px solid var(--border)}
+.sum-n{font-size:22px;font-weight:700}.sum-l{font-size:10px;color:var(--text2);margin-top:2px;font-weight:500}
+.ok-c{color:var(--ok)}.ng-c{color:var(--ng)}.pend-c{color:var(--gray)}
+.save-wrap{padding:12px 16px;padding-bottom:calc(12px + var(--safe-b));background:var(--white);border-top:1px solid var(--border)}
+.save-btn{width:100%;padding:15px;font-size:15px;font-weight:700;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;font-family:inherit}
+.save-btn:active{background:var(--navy2)}
+.save-btn:disabled{opacity:.35;cursor:not-allowed}
+.del-btn{width:100%;padding:10px;font-size:13px;font-weight:600;background:none;color:var(--ng);border:1px solid #fca5a5;border-radius:var(--radius);cursor:pointer;font-family:inherit;margin-top:8px}
+.del-btn:active{background:var(--ng-bg)}
+.hist-list{padding:8px 0}
+.hist-item{display:flex;align-items:center;background:var(--white);border-bottom:1px solid var(--border);padding:13px 16px;cursor:pointer;gap:12px}
+.hist-item:active{background:var(--gray-lt)}
+.hist-date{font-size:15px;font-weight:700;color:var(--navy);min-width:72px}
+.hist-person{font-size:11px;color:var(--text2);margin-top:2px}
+.hist-dots{display:flex;gap:3px;flex-wrap:wrap;flex:1;align-content:center}
+.hist-dot{width:9px;height:9px;border-radius:50%}
+.hist-dot.ok{background:var(--ok)}.hist-dot.ng{background:var(--ng)}.hist-dot.pend{background:var(--border)}
+.hist-arr{color:var(--text2);font-size:16px}
+.hist-empty{padding:60px 20px;text-align:center;color:var(--text2);font-size:14px}
+.hist-empty .ico{font-size:44px;display:block;margin-bottom:12px;opacity:.35}
+.toast{position:fixed;bottom:calc(24px + var(--safe-b));left:50%;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;font-size:13px;font-weight:600;padding:10px 22px;border-radius:99px;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* PRINT */
+@page{size:A4 landscape;margin:8mm 10mm}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff}
+  .app{display:none!important}
+  #print-area{display:block!important;padding:0}
+  .pt-page{width:100%;display:block}
+  .pt-title{font-size:12pt;font-weight:700;color:#0f2744;margin-bottom:3pt}
+  .pt-meta{font-size:7.5pt;color:#444;margin-bottom:4pt;display:flex;gap:14pt;flex-wrap:wrap}
+  .pt-meta strong{color:#111}
+  .pt-table-wrap{width:100%}
+  table.pt{border-collapse:collapse;font-size:6.5pt;table-layout:fixed;width:auto}
+  table.pt th{background:#0f2744!important;color:#fff!important;padding:3pt 0;text-align:center;font-weight:700;border:0.5pt solid #888}
+  table.pt th.item-col{text-align:left;width:108pt;padding-left:3pt}
+  table.pt th.no-col{width:12pt}
+  table.pt th.day-col{width:33pt}
+  table.pt td{border:0.5pt solid #ccc;padding:2pt 0;text-align:center;vertical-align:middle}
+  table.pt td.item-cell{text-align:left;font-size:5.8pt;line-height:1.3;padding-left:3pt;word-break:break-all}
+  table.pt td.no-cell{color:#888;font-size:5.8pt}
+  table.pt tr.cat-row td{background:#dbeafe!important;font-weight:700;font-size:6.8pt;color:#1e3a5f;text-align:left;padding:2pt 4pt}
+  table.pt tr.item-even td{background:#f9fafb!important}
+  table.pt tr{page-break-inside:avoid;break-inside:avoid}
+  .ok{background:#dcfce7!important;color:#14532d;font-weight:700;font-size:9pt;line-height:1}
+  .nx{background:#fee2e2!important;color:#7f1d1d;font-weight:700;font-size:9pt;line-height:1}
+  .mt{color:#d1d5db;font-size:6pt}
+  .sign-row td{height:13pt;background:#fffde7!important;font-size:6pt;color:#555;vertical-align:middle}
+  .pt-bottom{margin-top:3pt}
+  .pt-footer{font-size:6pt;color:#888;display:flex;justify-content:space-between}
+  .pt-legend{display:flex;gap:10pt;font-size:6pt;color:#444;margin-top:2pt;align-items:center}
+  .lg-dot{width:6pt;height:6pt;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:2pt}
+  .page-break{page-break-after:always;break-after:page;margin-bottom:0}
+}
+#print-area{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="screen active" id="sc-cal">
+  <div class="topbar">
+    <div class="topbar-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="28" height="28">
+  <!-- body -->
+  <rect x="4" y="18" width="18" height="9" rx="2" fill="#F5C518"/>
+  <!-- cab -->
+  <rect x="8" y="12" width="10" height="8" rx="1.5" fill="#F5C518"/>
+  <rect x="9" y="13" width="4" height="3" rx="1" fill="#9dd6f8" opacity="0.9"/>
+  <!-- boom arm -->
+  <rect x="17" y="10" width="12" height="3.5" rx="1.5" fill="#E8A800" transform="rotate(-20 17 10)"/>
+  <!-- stick -->
+  <rect x="24" y="14" width="9" height="3" rx="1.5" fill="#E8A800" transform="rotate(30 24 14)"/>
+  <!-- bucket -->
+  <path d="M29 22 Q32 20 33 24 Q31 27 28 26 Z" fill="#E8A800"/>
+  <!-- tracks -->
+  <rect x="2" y="26" width="22" height="5" rx="2.5" fill="#444"/>
+  <rect x="3" y="27" width="20" height="3" rx="1.5" fill="#666"/>
+  <circle cx="6" cy="28.5" r="2" fill="#333"/>
+  <circle cx="20" cy="28.5" r="2" fill="#333"/>
+  <circle cx="13" cy="28.5" r="1.5" fill="#555"/>
+</svg></div>
+    <div class="topbar-info">
+      <div class="topbar-title">重機始業前点検</div>
+      <div class="topbar-sub">㈱アシスト環境 — 車両系建設機械</div>
+    </div>
+    <button class="topbar-btn" onclick="showScreen('sc-hist')" aria-label="履歴">📋</button>
+  </div>
+  <div class="scroll-body">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+      <div class="cal-month-lbl" id="cal-lbl"></div>
+      <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal-dows" id="cal-dows"></div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="legend">
+      <div class="leg"><div class="dot ok"></div>全て○</div>
+      <div class="leg"><div class="dot ng"></div>×あり</div>
+      <div class="leg"><div class="dot half"></div>未完了</div>
+    </div>
+    <div class="cal-hint">日付をタップして点検を開始</div>
+    <div class="pdf-panel">
+      <div class="pdf-panel-hdr"><span>📄 期間を選んでPDF保存</span></div>
+      <div class="pdf-body">
+        <div class="pdf-site"><input type="text" id="pdf-site" placeholder="現場名（省略可）"></div>
+        <div class="pdf-row"><label>開始日</label><input type="date" id="pdf-from"></div>
+        <div class="pdf-row"><label>終了日</label><input type="date" id="pdf-to"></div>
+        <button class="pdf-btn" onclick="exportPDF()">📄 この期間の点検表をPDF出力</button>
+      </div>
+    </div>
+    <div style="height:24px"></div>
+  </div>
+</div>
+
+<div class="screen" id="sc-insp">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('sc-cal')" aria-label="戻る">&#8592;</button>
+    <div class="topbar-info">
+      <div class="topbar-title" id="insp-title">点検入力</div>
+      <div class="topbar-sub">車両系建設機械 始業前点検</div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="insp-datebar">
+      <div class="date-lbl" id="insp-date-lbl"></div>
+      <div class="status-badge" id="insp-status"></div>
+    </div>
+    <div class="meta-row">
+      <input type="text" id="inp-person" placeholder="担当者名" autocomplete="name">
+      <input type="text" id="inp-site" placeholder="現場名">
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-top"><span id="prog-txt">0 / 17 完了</span><span id="prog-pct">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0"></div></div>
+    </div>
+    <div id="items-wrap"></div>
+    <div class="sum-bar">
+      <div class="sum-card"><div class="sum-n ok-c" id="sn-ok">0</div><div class="sum-l">○ 異常なし</div></div>
+      <div class="sum-card"><div class="sum-n ng-c" id="sn-ng">0</div><div class="sum-l">× 要確認</div></div>
+      <div class="sum-card"><div class="sum-n pend-c" id="sn-pend">17</div><div class="sum-l">未入力</div></div>
+    </div>
+    <div class="save-wrap">
+      <button class="save-btn" id="save-btn" disabled onclick="saveInsp()">この日の点検を保存する</button>
+      <button class="del-btn" id="del-btn" style="display:none" onclick="deleteInsp()">この日の記録を削除する</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="sc-hist">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('sc-cal')" aria-label="戻る">&#8592;</button>
+    <div class="topbar-info">
+      <div class="topbar-title">点検履歴</div>
+      <div class="topbar-sub">過去の点検記録</div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="hist-list" id="hist-list"></div>
+  </div>
+</div>
+
+</div>
+<div id="print-area"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SEC=[
+  {label:"エンジン系",items:[
+    "エンジンの水温・油温・油圧等の各計器の異常はないか",
+    "エンジンの掛かり具合、排気色の異常はないか",
+    "エンジンからの異常音はないか",
+    "エンジンの潤滑装置（油量・汚れ・漏れ）の異常はないか",
+    "エンジンの冷却装置（水量・ベルトの張り・コアの目詰り）の異常はないか",
+  ]},
+  {label:"操作・制動系",items:[
+    "各操作レバー、ブレーキ、駐車ブレーキ、旋回ロックの異常はないか",
+    "操向クラッチ、ブレーキの作動異常はないか",
+    "主クラッチ及びミッションの作動異常はないか",
+    "ウインチの作動異常はないか",
+  ]},
+  {label:"電装・計器系",items:[
+    "配線、各ランプ、警報機、灯火装置の異常はないか",
+    "各部の給油、油量は適量か",
+    "計器類は正常の範囲を示しているか",
+  ]},
+  {label:"走行・旋回系",items:[
+    "旋回モーター、減速機の作動に異常はないか",
+    "キャタピラ・輪駆のボルトの緩みや脱落はないか",
+  ]},
+  {label:"油圧・アタッチメント系",items:[
+    "ブーム、アームはスムーズに作動するか",
+    "ブーム、アームのジョイントにガタはないか",
+    "油圧シリンダー、ホース、継手（作動油漏れ）の異常はないか",
+    "バケットの爪、エッジの摩耗はないか",
+  ]},
+];
+const TOTAL=SEC.reduce((a,s)=>a+s.items.length,0);
+const WD=['日','月','火','水','木','金','土'];
+
+let db={};
+try{db=JSON.parse(localStorage.getItem('tenken_v2')||'{}');}catch(e){}
+function saveDB(){try{localStorage.setItem('tenken_v2',JSON.stringify(db));}catch(e){}}
+
+const today=new Date();
+let calY=today.getFullYear(),calM=today.getMonth();
+let curKey=null,inspState={};
+
+function dk(y,m,d){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+function todayKey(){return dk(today.getFullYear(),today.getMonth(),today.getDate());}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='sc-cal')renderCal();
+  if(id==='sc-hist')renderHist();
+  window.scrollTo(0,0);
+}
+function changeMonth(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}renderCal();}
+
+function renderCal(){
+  document.getElementById('cal-lbl').textContent=`${calY}年${calM+1}月`;
+  document.getElementById('cal-dows').innerHTML=WD.map((w,i)=>`<div class="cal-dow${i===0?' sun':i===6?' sat':''}">${w}</div>`).join('');
+  const firstWD=new Date(calY,calM,1).getDay();
+  const lastDay=new Date(calY,calM+1,0).getDate();
+  let html='';
+  for(let i=0;i<firstWD;i++)html+=`<div class="cal-cell empty"></div>`;
+  for(let d=1;d<=lastDay;d++){
+    const key=dk(calY,calM,d);
+    const wd=new Date(calY,calM,d).getDay();
+    const isFuture=new Date(calY,calM,d).setHours(0,0,0,0)>new Date().setHours(0,0,0,0);
+    const isToday=key===todayKey();
+    let cls='cal-cell';
+    if(wd===0)cls+=' sun';else if(wd===6)cls+=' sat';
+    if(isToday)cls+=' today';if(isFuture)cls+=' future';
+    const rec=db[key];
+    let dots='';
+    if(rec){const vs=Object.values(rec.items||{});const done=vs.length,hasNG=vs.includes('×');dots=`<div class="dot-row"><div class="dot ${done<TOTAL?'half':hasNG?'ng':'ok'}"></div></div>`;}
+    html+=`<div class="${cls}" onclick="openInsp('${key}')"><span>${d}</span>${dots}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+}
+
+function openInsp(key){
+  curKey=key;
+  const p=key.split('-');const m=parseInt(p[1]),d=parseInt(p[2]);
+  document.getElementById('insp-title').textContent=`${m}月${d}日`;
+  document.getElementById('insp-date-lbl').textContent=`${calY}年${m}月${d}日（${WD[new Date(calY,m-1,d).getDay()]}）`;
+  const rec=db[key]||{};
+  document.getElementById('inp-person').value=rec.person||'';
+  document.getElementById('inp-site').value=rec.site||'';
+  inspState=Object.assign({},rec.items||{});
+  buildItems();updateProg();
+  document.getElementById('del-btn').style.display=db[key]?'block':'none';
+  showScreen('sc-insp');
+}
+
+function buildItems(){
+  let html='';let no=1;
+  SEC.forEach(sec=>{
+    html+=`<div class="sec-hdr">${sec.label}</div>`;
+    sec.items.forEach(txt=>{
+      const n=no,v=inspState[n]||null;
+      html+=`<div class="item-row"><div class="item-no">${n}</div><div class="item-text">${txt}</div><button class="btn-maru${v==='○'?' active':''}" id="bm-${n}" onclick="setV(${n},'○')" aria-label="異常なし">○</button><button class="btn-batu${v==='×'?' active':''}" id="bb-${n}" onclick="setV(${n},'×')" aria-label="要確認">×</button></div>`;
+      no++;
+    });
+  });
+  document.getElementById('items-wrap').innerHTML=html;
+}
+
+function setV(n,v){
+  const prev=inspState[n];
+  if(prev===v){inspState[n]=null;document.getElementById('bm-'+n).classList.remove('active');document.getElementById('bb-'+n).classList.remove('active');}
+  else{inspState[n]=v;document.getElementById('bm-'+n).classList.toggle('active',v==='○');document.getElementById('bb-'+n).classList.toggle('active',v==='×');}
+  updateProg();
+}
+
+function updateProg(){
+  const vs=Object.values(inspState).filter(v=>v);
+  const ok=vs.filter(v=>v==='○').length,ng=vs.filter(v=>v==='×').length;
+  const done=ok+ng,pend=TOTAL-done;
+  document.getElementById('sn-ok').textContent=ok;
+  document.getElementById('sn-ng').textContent=ng;
+  document.getElementById('sn-pend').textContent=pend;
+  document.getElementById('prog-txt').textContent=`${done} / ${TOTAL} 完了`;
+  const pct=Math.round(done/TOTAL*100);
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+  const st=document.getElementById('insp-status');
+  if(done===TOTAL){st.textContent='完了';st.className='status-badge badge-done';}
+  else if(done>0){st.textContent=`入力中 ${pct}%`;st.className='status-badge badge-ing';}
+  else st.textContent='';
+  document.getElementById('save-btn').disabled=done===0;
+}
+
+function saveInsp(){
+  db[curKey]={person:document.getElementById('inp-person').value,site:document.getElementById('inp-site').value,items:Object.assign({},inspState),saved:new Date().toISOString()};
+  saveDB();document.getElementById('del-btn').style.display='block';showToast('保存しました ✓');
+}
+function deleteInsp(){if(!confirm('この日の記録を削除しますか？'))return;delete db[curKey];saveDB();showScreen('sc-cal');}
+
+function renderHist(){
+  const list=document.getElementById('hist-list');
+  const keys=Object.keys(db).sort().reverse();
+  if(!keys.length){list.innerHTML=`<div class="hist-empty"><span class="ico">📋</span>まだ記録がありません</div>`;return;}
+  list.innerHTML=keys.map(key=>{
+    const rec=db[key],p=key.split('-');
+    const lbl=`${parseInt(p[1])}月${parseInt(p[2])}日`;
+    const wd=WD[new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])).getDay()];
+    const items=rec.items||{};
+    let dots='';for(let i=1;i<=TOTAL;i++){const v=items[i];dots+=`<div class="hist-dot ${v==='○'?'ok':v==='×'?'ng':'pend'}"></div>`;}
+    const done=Object.values(items).filter(v=>v).length;
+    return `<div class="hist-item" onclick="openInsp('${key}')"><div><div class="hist-date">${lbl}（${wd}）</div><div class="hist-person">${rec.person||'担当者未入力'} ${done===TOTAL?'✓ 完了':done+'/'+TOTAL}</div></div><div class="hist-dots">${dots}</div><div class="hist-arr">›</div></div>`;
+  }).join('');
+}
+
+/* PDF EXPORT */
+function getDates(from,to){
+  const dates=[];let cur=new Date(from);const end=new Date(to);
+  while(cur<=end){const y=cur.getFullYear(),m=cur.getMonth(),d=cur.getDate();dates.push(dk(y,m,d));cur.setDate(cur.getDate()+1);}
+  return dates;
+}
+function fmtShort(key){const p=key.split('-');return `${parseInt(p[1])}/${parseInt(p[2])}\n(${WD[new Date(+p[0],+p[1]-1,+p[2]).getDay()]})`;}
+function fmtFull(key){const p=key.split('-');return `${p[0]}年${parseInt(p[1])}月${parseInt(p[2])}日`;}
+
+function buildTable(dates,site,from2,to2,printed){
+  const rows=[];let itemNo=1;
+  SEC.forEach(sec=>{
+    rows.push({type:'cat',label:sec.label});
+    sec.items.forEach(txt=>{rows.push({type:'item',no:itemNo++,text:txt});});
+  });
+  const thDates=dates.map(key=>{
+    const p=key.split('-');const wd=new Date(+p[0],+p[1]-1,+p[2]).getDay();
+    const wdColor=wd===0?'color:#b91c1c':wd===6?'color:#1d4ed8':'';
+    return `<th class="day-col" style="${wdColor}">${parseInt(p[1])}/${parseInt(p[2])}<br>(${WD[wd]})</th>`;
+  }).join('');
+  let itemRowCount=0;
+  const tableRows=rows.map(r=>{
+    if(r.type==='cat') return `<tr class="cat-row"><td colspan="${2+dates.length}">${r.label}</td></tr>`;
+    const evenCls=itemRowCount++%2===1?' item-even':'';
+    const tds=dates.map(key=>{
+      const rec=db[key];const v=rec&&rec.items&&rec.items[r.no];
+      if(v==='○')return `<td class="ok">○</td>`;
+      if(v==='×')return `<td class="nx">×</td>`;
+      return `<td class="mt">—</td>`;
+    }).join('');
+    return `<tr class="${evenCls}"><td class="no-cell">${r.no}</td><td class="item-cell">${r.text}</td>${tds}</tr>`;
+  }).join('');
+  const signTds=dates.map(key=>{
+    const rec=db[key];
+    return `<td class="sign-row">${rec&&rec.person?rec.person:''}</td>`;
+  }).join('');
+  return `
+    <div class="pt-page">
+      <div class="pt-title">車両系建設機械 始業前点検表</div>
+      <div class="pt-meta">
+        <span><strong>現場名：</strong>${site}</span>
+        <span><strong>期間：</strong>${fmtFull(from2)} 〜 ${fmtFull(to2)}</span>
+        <span><strong>解体工事店：</strong>㈱アシスト環境</span>
+      </div>
+      <div class="pt-table-wrap">
+        <table class="pt">
+          <thead><tr>
+            <th class="no-col">No.</th>
+            <th class="item-col">点検項目</th>
+            ${thDates}
+          </tr></thead>
+          <tbody>
+            ${tableRows}
+            <tr class="sign-row"><td colspan="2" style="text-align:left;padding-left:4pt;font-weight:700">確認者サイン</td>${signTds}</tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pt-bottom">
+        <div class="pt-legend">
+          <span><span class="lg-dot" style="background:#16a34a"></span>○ 異常なし</span>
+          <span><span class="lg-dot" style="background:#dc2626"></span>× 要確認・異常あり</span>
+          <span><span class="lg-dot" style="background:#e5e7eb"></span>— 未入力</span>
+        </div>
+        <div class="pt-footer"><span>出力日：${printed}</span><span>重機始業前点検アプリ</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function exportPDF(){
+  const from=document.getElementById('pdf-from').value;
+  const to=document.getElementById('pdf-to').value;
+  const site=document.getElementById('pdf-site').value||'　';
+  if(!from||!to){showToast('開始日と終了日を選んでください');return;}
+  if(from>to){showToast('終了日は開始日以降にしてください');return;}
+  const dates=getDates(from,to);
+  if(dates.length>62){showToast('期間は最大62日までです');return;}
+  const printed=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+  const CHUNK=20;
+  let html='';
+  for(let i=0;i<dates.length;i+=CHUNK){
+    const chunk=dates.slice(i,i+CHUNK);
+    const chunkFrom=chunk[0],chunkTo=chunk[chunk.length-1];
+    if(i>0) html+=`<div class="page-break"></div>`;
+    html+=buildTable(chunk,site,chunkFrom,chunkTo,printed);
+  }
+  document.getElementById('print-area').innerHTML=html;
+  document.querySelector('.app').style.display='none';
+  document.getElementById('print-area').style.display='block';
+  setTimeout(()=>{
+    window.print();
+    document.querySelector('.app').style.display='';
+    document.getElementById('print-area').style.display='none';
+  },150);
+}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// init PDF date defaults
+(function(){
+  const y=today.getFullYear(),m=today.getMonth();
+  document.getElementById('pdf-from').value=dk(y,m,1);
+  document.getElementById('pdf-to').value=dk(y,m,new Date(y,m+1,0).getDate());
+})();
+
+renderCal();
+</script>
+</body>
+</html>
